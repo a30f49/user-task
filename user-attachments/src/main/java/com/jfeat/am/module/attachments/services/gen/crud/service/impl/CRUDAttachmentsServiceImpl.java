@@ -20,11 +20,6 @@ import com.jfeat.crud.plus.impl.CRUDServiceOnlyImpl;
 
 @Service
 public class CRUDAttachmentsServiceImpl  extends CRUDServiceOnlyImpl<Attachments> implements CRUDAttachmentsService {
-
-
-
-
-
         @Resource
         protected AttachmentsMapper attachmentsMapper;
 
@@ -32,13 +27,6 @@ public class CRUDAttachmentsServiceImpl  extends CRUDServiceOnlyImpl<Attachments
         protected BaseMapper<Attachments> getMasterMapper() {
                 return attachmentsMapper;
         }
-
-
-
-
-
-
-
 }
 
 
