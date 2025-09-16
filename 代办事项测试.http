@@ -1,0 +1,120 @@
+###
+@Endpoint = http://localhost:8080
+@Token =Bearea eyJ0eXBlIjoiSldUIiwiYWxnIjoiSFM1MTIifQ.eyJvcmdJZCI6MzAsInVzZXJJZCI6NTgzLCJhY2NvdW50IjoiNWVlMDRkYzhjZTFkNGY5N2IyNDM0MDRlMTI0NTExZWYiLCJkb21haW5Vc2VySWQiOiIiLCJ0eXBlIjoxNywiaWF0IjoxNjY1NTYwOTMwLCJqdGkiOiI1ODMiLCJzdWIiOiI1ZWUwNGRjOGNlMWQ0Zjk3YjI0MzQwNGUxMjQ1MTFlZiIsImV4cCI6MTY2NTgyMDEzMH0.fC4iEacr_jFxT1r2XmVHGRE20ntdJaQ_DCMma4Ak05vdTxt3x1Yg8tgI2RQVYbPQzBjcSS8aa-sgvELDuUodOA
+
+### 登录
+GET {{Endpoint}}/api/oauth/test/ghkojioijkk/583
+
+### 代办事项列表
+GET {{Endpoint}}/api/u/task/tasks
+content-type: application/json
+
+
+
+### 代办事项
+POST {{Endpoint}}/api/u/task/tasks
+content-type: application/json
+
+{
+    "taskType":"TODO",
+    "taskName":"代办事件A",
+    "closeTime":"2022-10-13",
+    "noticeTime":"2022-10-12",
+    "deadline":"2022-10-13",
+    "startTime":"2022-10-11",
+    "OwnerByEndUserId":1,
+    "priority":1,
+    "status":"TODO"
+}
+
+### 代办事项
+PUT {{Endpoint}}/api/u/task/tasks/10
+content-type: application/json
+Authorization: Bearer {{Token}}
+
+{
+    "taskType":"TODO",
+    "taskName":"代办事件A",
+    "closeTime":"2022-10-13",
+    "noticeTime":"2022-10-12",
+    "deadline":"2022-10-13",
+    "startTime":"2022-10-11",
+    "OwnerByEndUserId":1,
+    "priority":1,
+    "status":"TODO",
+    "version":2
+}
+ 
+### 代办事项 查看
+GET {{Endpoint}}/api/u/task/tasks/10
+content-type: application/json
+Authorization: Bearer {{Token}}
+
+
+ 
+### 代办事项 列表查看 
+GET {{Endpoint}}/api/u/task/tasks?ownerByEndUserId=1
+content-type: application/json
+Authorization: Bearer {{Token}}
+
+
+### 代办事项 删除  id+version 允许删除的状态 ：null  ("Open") ("Draft") ("Closed") ("Undefined")
+DELETE  {{Endpoint}}/api/u/task/tasks/11/1
+content-type: application/json
+Authorization: Bearer {{Token}}
+
+
+
+
+
+### 跟进信息
+POST {{Endpoint}}/api/u/task/taskfollower
+content-type: application/json
+Authorization: Bearer {{Token}}
+
+{
+    "endUserId":"5",
+    "taskId":"10"
+   
+}
+
+### 用户task 列表
+GET {{endpoint}}/api/u/task/tasks/queue
+Authorization:{{token}}
+
+### 添加用户到队列
+POST {{endpoint}}/api/u/taskQueue/userQueueRelation/userQueue
+{
+    "userId":298,
+    "queueId":1
+}
+
+### 移除用户队列
+DELETE {{endpoint}}/api/u/taskQueue/userQueueRelation/userQueue
+{
+    "userId":298,
+    "queueId":1
+}
+
+### 移交task
+POST {{endpoint}}/api/u/task/taskUserRelation/moveTask
+Authorization:{{othertoken}}
+{
+    "userId":298,
+    "taskId":40
+}
+
+### 移除task
+DELETE {{endpoint}}/api/u/task/taskUserRelation/
+Authorization:{{othertoken}}
+{
+    "userId":298,
+    "taskId":40
+}
+
+### 修改状态
+PUT {{endpoint}}/api/u/task/tasks/status/10
+Authorization:{{othertoken}}
+{
+    "status":"Undefined"
+}

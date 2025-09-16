@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.am.module.taskQueue.services.domain.dao.QueryTaskQueueDao">
+                                                                                                                                                                                                                                                                                                                                                                                                            <sql id="Base_Column_List">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        task_queue.id, task_queue.name, task_queue.title, task_queue.org_id AS orgId, task_queue.email_operation AS emailOperation, task_queue.sms_operation AS smsOperation, task_queue.wechat_operation AS wechatOperation, task_queue.pid, task_queue.create_time AS createTime, task_queue.update_time AS updateTime
+    </sql>
+
+        <sql id="QueryOwnedOrgIds">
+         SELECT children.id FROM t_sys_org, t_sys_org as children WHERE t_sys_org.left_num &lt;= children.left_num AND
+         t_sys_org.right_num >= children.left_num and t_sys_org.id=#{record.orgId} order by t_sys_org.node_level ASC
+    </sql>
+    
+    
+    <select id="queryMasterModel" resultType="TaskQueueModel">
+       SELECT task_queue.*
+       FROM task_queue
+       WHERE task_queue.id=#{id}
+       GROUP BY task_queue.id
+    </select>
+
+
+
+                                            
+    <select id="findTaskQueuePage" resultType="TaskQueueRecord" parameterType="TaskQueueRecord">
+            SELECT <include refid="Base_Column_List"/>
+
+        
+
+        FROM task_queue
+
+        
+                    <if test="record.orgId > 0">
+                ,(<include refid="QueryOwnedOrgIds"></include>) AS ownedOrgIds
+            </if>
+        
+        WHERE 1=1
+                <if test="record.orgId > 0">
+            AND task_queue.org_id = ownedOrgIds.id
+        </if>
+        
+
+        
+                                                                            <if test="record.id != null and record.id>0 ">
+                                    AND task_queue.id LIKE CONCAT('%',#{record.id},'%')
+                            </if>
+                                                                    <if test="record.name != null and record.name!= ''">
+                                    AND task_queue.name LIKE CONCAT('%',#{record.name},'%')
+                            </if>
+                                                                    <if test="record.title != null and record.title!= ''">
+                                    AND task_queue.title LIKE CONCAT('%',#{record.title},'%')
+                            </if>
+                                                                    
+
+                                                                                        <if test="record.orgId != null and record.orgId>0 ">
+                                    AND task_queue.org_id IN (<include refid="QueryOwnedOrgIds"/>)
+                            </if>
+                                                                    
+
+                                                                                        <if test="record.emailOperation != null and record.emailOperation>0 ">
+                                    AND task_queue.email_operation LIKE CONCAT('%',#{record.emailOperation},'%')
+                            </if>
+                                                                    
+
+                                                                                        <if test="record.smsOperation != null and record.smsOperation>0 ">
+                                    AND task_queue.sms_operation LIKE CONCAT('%',#{record.smsOperation},'%')
+                            </if>
+                                                                    
+
+                                                                                        <if test="record.wechatOperation != null and record.wechatOperation>0 ">
+                                    AND task_queue.wechat_operation LIKE CONCAT('%',#{record.wechatOperation},'%')
+                            </if>
+                                                                    <if test="record.pid != null and record.pid>0 ">
+                                    AND task_queue.pid LIKE CONCAT('%',#{record.pid},'%')
+                            </if>
+                                                                                
+
+                                                                                        <if test="record.createTime != null and record.createTime>0 ">
+                                    AND task_queue.create_time LIKE CONCAT('%',#{record.createTime},'%')
+                            </if>
+                                                                                
+
+                                                                                        <if test="record.updateTime != null and record.updateTime>0 ">
+                                    AND task_queue.update_time LIKE CONCAT('%',#{record.updateTime},'%')
+                            </if>
+        
+        <if test="startTime != null">
+            <![CDATA[AND task_queue.start_time >= DATE(#{startTime})]]>
+        </if>
+        <if test="endTime != null">
+            <![CDATA[AND task_queue.end_time <= DATE(#{endTime}]]>
+        </if>
+            <!--
+        <if test="search != null and search != ''">
+            OR task_queue.name LIKE CONCAT('%',#{search},'%')
+        </if>
+        -->
+                            ORDER BY update_time DESC
+                                                    , create_time DESC
+                        </select>
+</mapper>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.am.module.message.services.domain.dao.QueryMessageDao">
+    <sql id="Base_Column_List">
+        message.*
+    </sql>
+
+    <sql id="QueryOwnedOrgIds">
+        SELECT children.id FROM t_sys_org, t_sys_org as children WHERE t_sys_org.left_num &lt;= children.left_num AND
+        t_sys_org.right_num >= children.left_num and t_sys_org.id=#{ownerOrgId} order by t_sys_org.node_level ASC
+    </sql>
+
+    <select id="findMessagePage" resultType="MessageRecord" parameterType="MessageRecord">
+        SELECT message.*
+        FROM message
+        <if test="record.orgId > 0">
+            ,(<include refid="QueryOwnedOrgIds"></include>) AS ownedOrgIds
+        </if>
+        WHERE 1=1
+        <if test="record.orgId > 0">
+            AND t_sys_org.org_id = ownedOrgIds.id
+        </if>
+        <if test="record.id != null and record.id>0 ">
+            AND message.id LIKE CONCAT('%',#{record.id},'%')
+        </if>
+        <if test="record.title != null and record.title!= ''">
+            AND message.title LIKE CONCAT('%',#{record.title},'%')
+        </if>
+        <if test="record.desc != null and record.desc!= ''">
+            AND message.desc LIKE CONCAT('%',#{record.desc},'%')
+        </if>
+
+        <if test="record.messageType != null and record.messageType!= ''">
+            AND message.message_type LIKE CONCAT('%',#{record.messageType},'%')
+        </if>
+
+        <if test="record.referenceId != null and record.referenceId>0 ">
+            AND message.reference_id LIKE CONCAT('%',#{record.referenceId},'%')
+        </if>
+
+        <if test="record.noticeDate != null and record.noticeDate>0 ">
+            AND message.notice_date LIKE CONCAT('%',#{record.noticeDate},'%')
+        </if>
+        <if test="record.noticeStaffId != null and record.noticeStaffId>0 ">
+            AND message.noticeStaffId LIKE CONCAT('%',#{record.noticeStaffId},'%')
+        </if>
+        <!--
+<if test="search != null and search != ''">
+OR message.name LIKE CONCAT('%',#{search},'%')
+</if>
+-->
+    </select>
+    <select id="findNewMessage" resultType="MessageRecord">
+        SELECT id, title, `desc`, message_type AS messageType, reference_id AS referenceId, notice_date AS noticeDate, notice_end_user_id as noticeEndUserId
+        FROM message
+        WHERE 1=1
+        <if test="userId != null ">
+            AND message.notice_end_user_id=${userId}
+        </if>
+        <if test="isGreat != null and isGreat == '1'.toString()">
+            <![CDATA[
+             AND message.notice_date > current_timestamp()
+                ]]>
+        </if>
+        <if test="isGreat != null and isGreat == '0'.toString()">
+            <![CDATA[
+             AND message.notice_date <= current_timestamp()
+                ]]>
+        </if>
+    </select>
+
+    <select id="getMessagePage" resultType="MessageRecord">
+        SELECT id, title, `desc`, message_type AS messageType, reference_id AS referenceId, notice_date AS noticeDate, notice_end_user_id as noticeEndUserId
+        FROM message
+        WHERE 1=1
+        <if test="userId > 0">
+            AND notice_end_user_id=#{userId}
+        </if>
+    </select>
+</mapper>

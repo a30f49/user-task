@@ -1,0 +1,174 @@
+##########################################################
+##################  所有profile共有的配置  #################
+##########################################################
+
+###################  am配置  ###################
+am:
+  swagger-open: true #是否开启swagger (true/false)
+  kaptcha-open: false #是否开启登录时验证码 (true/false)
+  #file-upload-path: d:/tmp  #文件上传目录(不配置的话为java.io.tmpdir目录)
+  worker-id: 0 # id gen service machine id 0~1023
+  redis-host: 127.0.0.1
+  redis-port: 6379
+  json-serialize-date-format: dd/MM/yyyy HH:mm:ss
+
+###################  jwt配置  ###################
+###################  jwt配置  ###################
+jwt:
+  encoded-key: L7A/6zARSkK1j7Vd5SDD9pSSqZlqF7mAhiOgRbgv9Smce6tf4cJnvKOjtKPxNNnWQj+2lQEScm3XIUjhW+YVZg==
+  normal-encoded-key: bm9ybWFsLWVuY29kZWQta2V5
+  ttl-millis: 259200000  # 72 hours
+  #enable-attempt-login: true
+  #non-shiro-permission-check: false
+
+###################  项目启动端口  ###################
+server:
+  port: 8080
+  ssl:
+    enabled: false
+    key-store: classpath:sb.keystore
+    key-store-password: changeme
+    key-store-type: JKS
+    key-alias: sbkey
+#https://my.oschina.net/kingchen8080/blog/994367
+
+###################  beetl配置  ###################
+beetl:
+  delimiter-statement-start: \@   #开始结束标签(yaml不允许@开头)
+  delimiter-statement-end: null
+  resource-tagroot: common/tags   #自定义标签文件Root目录和后缀
+  resource-tagsuffix: tag
+
+
+###################  spring配置  ###################
+spring:
+  profiles:
+    active: dev
+  mvc:
+    static-path-pattern: /static/**
+    view:
+      prefix: /WEB-INF/view
+  http:
+    converters:
+      preferred-json-mapper: fastjson
+
+
+###################  mybatis-plus配置  ###################
+mybatis-plus:
+  mapper-locations: classpath*:com/jfeat/**/mapping/*.xml
+  typeAliasesPackage: com.jfeat.**.model
+  global-config:
+    id-type: 2  #0:数据库ID自增   1:用户输入id   2:全局唯一id(IdWorker)   3:全局唯一ID(uuid)  4: 该类型为未设置主键类型(none)
+    db-column-underline: true
+    refresh-mapper: true
+    logic-delete-value: -1
+    logic-not-delete-value: 0
+  #    sql-injector: com.baomidou.mybatisplus.mapper.LogicSqlInjector
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true #配置的缓存的全局开关
+    lazyLoadingEnabled: true #延时加载的开关
+    multipleResultSetsEnabled: true #开启的话，延时加载一个属性时会加载该对象全部属性，否则按需加载属性
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #打印sql语句,调试用
+
+
+---
+
+##########################################################
+###################  测试环境的profile  ###################
+##########################################################
+spring:
+  profiles: test
+  datasource:
+      url: jdbc:h2:mem:power;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
+      driver-class-name: org.h2.Driver
+      username: sa
+      password:
+      filters: log4j,wall,mergeStat
+      schema: classpath*:sql/*-schema.sql
+      data: classpath*:sql/*-data.sql
+
+logging:
+  level: debug
+  file: logs/sbseed.log
+
+am:
+  shiro-cache-redis: false
+---
+
+##########################################################
+###################  开发环境的profile  ###################
+##########################################################
+spring:
+  profiles: dev
+  datasource:
+    url: jdbc:mysql://localhost:3306/test?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull
+#    url: jdbc:mysql://sh-cdb-q5vnc0iy.sql.tencentcdb.com:59449/smallsaas?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull
+#    url: jdbc:mysql://sh-cdb-q5vnc0iy.sql.tencentcdb.com:59449/unicom?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull
+    #url: jdbc:mysql://localhost:3307/uaas-saas?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull
+    username: root
+    password: root
+#    password: zb2014@888
+    #driver-class-name: com.mysql.cj.jdbc.Driver
+    filters: log4j,wall,mergeStat
+    sql-script-encoding: UTF-8
+    schema: classpath*:sql/**/*-schema.sql
+    data: classpath*:sql/**/*-data.sql
+    initialize: false
+  kafka:
+    bootstrap-servers: 106.13.216.62:9092
+    producer: # producer 生产者
+      retries: 0 # 重试次数
+      acks: 1 # 应答级别:多少个分区副本备份完成时向生产者发送ack确认(可选0、1、all/-1)
+      batch-size: 16384 # 批量大小
+      buffer-memory: 33554432 # 生产端缓冲区大小
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      #      value-serializer: com.itheima.demo.config.MySerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer: # consumer消费者
+      group-id: kafka-test # 默认的消费组ID
+      enable-auto-commit: true # 是否自动提交offset
+      auto-commit-interval: 100  # 提交offset延时(接收到消息后多久提交offset)
+      # earliest:当各分区下有已提交的offset时，从提交的offset开始消费；无提交的offset时，从头开始消费
+      # latest:当各分区下有已提交的offset时，从提交的offset开始消费；无提交的offset时，消费新产生的该分区下的数据
+      # none:topic各分区都存在已提交的offset时，从offset后开始消费；只要有一个分区不存在已提交的offset，则抛出异常
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      #      value-deserializer: com.itheima.demo.config.MyDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  mail:
+    host: smtp.126.com
+    port: 25
+    username: jiajiajia5000@126.com
+    password: CFERNTQPRZYHBRXO
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+logging:
+  level: debug
+  file: logs/trace.log
+---
+
+##########################################################
+###################  正式环境的profile  ###################
+##########################################################
+spring:
+  profiles: produce
+  datasource:
+      #url: jdbc:mysql://127.0.0.1:3306/power?autoReconnect=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull
+      url: jdbc:mysql://120.79.77.207:3306/power?autoReconnect=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull
+      username: power
+      password: go8001Conton@apis_do
+      filters: log4j,wall,mergeStat
+
+logging:
+  level: warn
+  file: logs/sbseed.log
+
+am:
+  shiro-cache-redis: true

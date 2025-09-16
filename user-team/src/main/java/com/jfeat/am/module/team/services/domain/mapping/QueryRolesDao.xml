@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.am.module.team.services.domain.dao.QueryRolesDao">
+    <sql id="Base_Column_List">
+            roles.*
+        </sql>
+    <select id="findRolePage" resultType="com.jfeat.am.module.team.services.persistence.model.Roles" >
+        SELECT roles.*
+        FROM roles
+        WHERE 1=1
+        <if test="RoleName != null and RoleName!= ''">
+            AND roles.RoleName LIKE CONCAT('%',#{RoleName},'%')
+        </if>
+        <if test="RoleDesc != null and RoleDesc!= ''">
+            AND roles.RoleDesc LIKE CONCAT('%',#{RoleDesc},'%')
+        </if>
+    </select>
+</mapper>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.am.module.taskQueue.services.domain.dao.QueryTaskQueueUserRelationDao">
+                                                                                                                                                                                                                <sql id="Base_Column_List">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                task_queue_user_relation.id, task_queue_user_relation.user_id AS userId, task_queue_user_relation.queue_id AS queueId, task_queue_user_relation.create_time AS createTime, task_queue_user_relation.update_time AS updateTime
+    </sql>
+
+    
+    
+    <select id="queryMasterModel" resultType="TaskQueueUserRelationModel">
+       SELECT task_queue_user_relation.*
+       FROM task_queue_user_relation
+       WHERE task_queue_user_relation.id=#{id}
+       GROUP BY task_queue_user_relation.id
+    </select>
+
+
+
+                    
+    <select id="findTaskQueueUserRelationPage" resultType="TaskQueueUserRelationRecord" parameterType="TaskQueueUserRelationRecord">
+            SELECT <include refid="Base_Column_List"/>
+
+        
+
+        FROM task_queue_user_relation
+
+        
+        
+        WHERE 1=1
+        
+
+        
+                                                                            <if test="record.id != null and record.id>0 ">
+                                    AND task_queue_user_relation.id LIKE CONCAT('%',#{record.id},'%')
+                            </if>
+                                                                    
+
+                                                                                        <if test="record.userId != null and record.userId>0 ">
+                                    AND task_queue_user_relation.user_id LIKE CONCAT('%',#{record.userId},'%')
+                            </if>
+                                                                    
+
+                                                                                        <if test="record.queueId != null and record.queueId>0 ">
+                                    AND task_queue_user_relation.queue_id LIKE CONCAT('%',#{record.queueId},'%')
+                            </if>
+                                                                                
+
+                                                                                        <if test="record.createTime != null and record.createTime>0 ">
+                                    AND task_queue_user_relation.create_time LIKE CONCAT('%',#{record.createTime},'%')
+                            </if>
+                                                                                
+
+                                                                                        <if test="record.updateTime != null and record.updateTime>0 ">
+                                    AND task_queue_user_relation.update_time LIKE CONCAT('%',#{record.updateTime},'%')
+                            </if>
+        
+        <if test="startTime != null">
+            <![CDATA[AND task_queue_user_relation.start_time >= DATE(#{startTime})]]>
+        </if>
+        <if test="endTime != null">
+            <![CDATA[AND task_queue_user_relation.end_time <= DATE(#{endTime}]]>
+        </if>
+            <!--
+        <if test="search != null and search != ''">
+            OR task_queue_user_relation.name LIKE CONCAT('%',#{search},'%')
+        </if>
+        -->
+                            ORDER BY update_time DESC
+                                                    , create_time DESC
+                        </select>
+</mapper>

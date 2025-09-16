@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jfeat.am.module.task.services.domain.dao.QueryWorkTaskDao">
+
+
+    <select id="searchTaskOwnerByTeam" resultType="WorkTaskModel">
+        SELECT task.*
+        FROM task
+        WHERE 1=1
+        <if test="status=='UNDONE' ">
+            AND task.status != 'Closed'
+        </if>
+        AND task.ownerByStaffId in
+        (SELECT DISTINCT staffId
+        FROM staff_team
+        WHERE staff_team.teamId in
+        (SELECT teamId
+        FROM staff_team
+        WHERE staff_team.isLeader=1
+        AND staff_team.staffId=#{staffId})
+        )
+        GROUP BY task.id
+        <if test="orderBy==null or orderBy==''">
+            ORDER BY task.priority DESC
+        </if>
+        <if test="orderBy!=null and orderBy!=''">
+            ORDER BY task.${orderBy}
+        </if>
+    </select>
+
+    <select id="searchTaskFollowerByTeam" resultType="WorkTaskModel">
+        SELECT task.*
+        FROM task
+        LEFT JOIN task_follower
+        ON task_follower.taskId=task.id
+        <if test="status=='UNDONE' ">
+            AND task.status != 'Closed'
+        </if>
+        WHERE 1=1
+        and task_follower.teamId in
+        (SELECT teamId
+        FROM staff_team
+        WHERE staff_team.isLeader=1
+        AND staff_team.staffId=#{staffId})
+        or task_follower.staffId in
+        (SELECT DISTINCT staffId
+        FROM staff_team
+        WHERE staff_team.teamId in
+        (SELECT teamId
+        FROM staff_team
+        WHERE staff_team.isLeader=1
+        AND staff_team.staffId=#{staffId})
+        )
+        GROUP BY task.id
+        <if test="orderBy==null or orderBy==''">
+            ORDER BY task.priority DESC
+        </if>
+        <if test="orderBy!=null and orderBy!=''">
+            ORDER BY task.${orderBy}
+        </if>
+    </select>
+
+    <select id="allTaskOwnerByMe" resultType="WorkTaskModel">
+        SELECT task.*
+        FROM task
+        WHERE 1=1
+        <if test="status=='UNDONE' ">
+            AND task.status != 'Closed'
+        </if>
+        AND task.owner_by_staff_id=#{staffId}
+        <if test="orderBy==null or orderBy==''">
+            ORDER BY task.priority DESC
+        </if>
+        <if test="orderBy!=null and orderBy!=''">
+            ORDER BY task.${orderBy}
+        </if>
+    </select>
+
+    <select id="allTaskFollowerByMe" resultType="WorkTaskModel">
+        SELECT task.*
+        FROM task
+        LEFT JOIN task_follower
+        ON task_follower.taskId=task.id
+        WHERE 1=1
+        <if test="status=='UNDONE' ">
+            AND task.status != 'Closed'
+        </if>
+        AND task_follower.staffId=#{staffId}
+        <if test="orderBy==null or orderBy==''">
+            ORDER BY task.priority DESC
+        </if>
+        <if test="orderBy != null and orderBy!= ''">
+            ORDER BY task.${orderBy}
+        </if>
+    </select>
+
+
+    <sql id="Base_Column_List">
+        task.*
+    </sql>
+    <select id="findTaskPage" resultType="WorkTask" parameterType="WorkTask">
+        SELECT task.*
+        FROM task
+        WHERE 1=1
+        <if test="ownerByStaffId != null and ownerByStaffId>0 ">
+            AND task.owner_by_staff_id LIKE CONCAT('%',#{ownerByStaffId},'%')
+        </if>
+        <if test="ownerByStaffId != null and ownerByStaffId>0 ">
+            AND task.owner_by_end_user_id LIKE CONCAT('%',#{ownerByEndUserId},'%')
+        </if>
+        <if test="taskName != null and taskName!= ''">
+            AND task.task_name LIKE CONCAT('%',#{taskName},'%')
+        </if>
+        <if test="status != null and status>0 ">
+            AND task.status LIKE CONCAT('%',#{status},'%')
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+
+    <select id="queryUserWorkTaskList" resultType="WorkTask" parameterType="WorkTaskModel">
+        select * from
+                     (SELECT task.* FROM task
+        JOIN task_queue ON task_queue.id = task.queue_id
+        JOIN task_queue_user_relation ON task_queue_user_relation.queue_id = task_queue.id
+        JOIN t_end_user ON  t_end_user.id = task_queue_user_relation.user_id
+        WHERE 1=1
+        <if test="record.id != null and record.id>0 ">
+            AND task.id = #{record.id}
+        </if>
+        <if test="record.userId != null and record.userId>0 ">
+            AND t_end_user.id = #{record.userId}
+        </if>
+        <if test="record.ownerByStaffId != null and record.ownerByStaffId>0 ">
+            AND task.owner_by_staff_id LIKE CONCAT('%',#{record.ownerByStaffId},'%')
+        </if>
+        <if test="record.ownerByStaffId != null and record.ownerByStaffId>0 ">
+            AND task.owner_by_end_user_id LIKE CONCAT('%',#{record.ownerByEndUserId},'%')
+        </if>
+        <if test="record.taskName != null and record.taskName!= ''">
+            AND task.task_name LIKE CONCAT('%',#{record.taskName},'%')
+        </if>
+        <if test="record.status != null and record.status>0 ">
+            AND task.status LIKE CONCAT('%',#{record.status},'%')
+        </if>
+        UNION
+        SELECT task.* FROM task
+        JOIN task_user_relation ON task_user_relation.task_id = task.id
+        JOIN t_end_user ON  t_end_user.id = task_user_relation.user_id
+        WHERE 1=1
+        <if test="record.id != null and record.id>0 ">
+            AND task.id = #{record.id}
+        </if>
+        <if test="record.userId != null and record.userId>0 ">
+            AND t_end_user.id = #{record.userId}
+        </if>
+        <if test="record.ownerByStaffId != null and record.ownerByStaffId>0 ">
+            AND task.owner_by_staff_id LIKE CONCAT('%',#{record.ownerByStaffId},'%')
+        </if>
+        <if test="record.ownerByStaffId != null and record.ownerByStaffId>0 ">
+            AND task.owner_by_end_user_id LIKE CONCAT('%',#{record.ownerByEndUserId},'%')
+        </if>
+        <if test="record.taskName != null and record.taskName!= ''">
+            AND task.task_name LIKE CONCAT('%',#{record.taskName},'%')
+        </if>
+        <if test="record.status != null and record.status>0 ">
+            AND task.status LIKE CONCAT('%',#{record.status},'%')
+        </if>) as t
+        ORDER BY create_time DESC,start_time ASC
+    </select>
+
+</mapper>
+        <!-- 查询的 OwnerByTeamTask -->
+
+        <!--SELECT task.*-->
+        <!--FROM task-->
+        <!--WHERE 1=1-->
+        <!--<if test="status=='UNDONE' ">-->
+        <!--AND task.status != 'CLOSED'-->
+        <!--</if>   -->
+
+
+        <!--AND task.ownerByStaffId in-->
+        <!--(-->
+
+        <!--SELECT DISTINCT staffId-->
+        <!--FROM staffTeam-->
+        <!--WHERE staffTeam.teamId-->
+        <!--in-->
+
+        <!--(SELECT DISTINCT teamId-->
+        <!--from staffTeam-->
+        <!--WHERE staffTeam.isLeader=1-->
+        <!--AND staffTeam.staffId=1)-->
+        <!--)-->
+        <!--OR task.ownerByTeamId in-->
+        <!--(SELECT DISTINCT teamId-->
+        <!--from staffTeam-->
+        <!--WHERE staffTeam.isLeader=1-->
+        <!--AND staffTeam.staffId=#{staffId})-->
+
+        <!--GROUP BY task.id-->
+        <!--ORDER BY task.priority DESC-->
+
